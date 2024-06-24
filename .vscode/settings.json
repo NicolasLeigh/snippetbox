@@ -1,0 +1,6 @@
+{
+  "cSpell.words": ["servemux", "Snippetbox", "tmpl"],
+  "files.associations": {
+    "*.tmpl": "html"
+  }
+}
