@@ -15,7 +15,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// would keep executing and also write the "Hello from SnippetBox" message.
 	if r.URL.Path != "/" {
 		// http.NotFound(w, r)
-		app.notFound(w)  // Use the notFound() helper
+		app.notFound(w) // Use the notFound() helper
 		return
 	}
 
