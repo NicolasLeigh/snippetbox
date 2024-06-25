@@ -10,7 +10,8 @@ import (
 // then sends a generic 500 Internal Server Error response to the user.
 func (app *application) serverError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
-	app.errLog.Print(trace)
+	// app.errLog.Print(trace)
+	app.errLog.Output(2, trace) // calldepth is 2 // ERROR   2024/06/25 13:25:25 handlers.go:46: open ./ui/html/pages/home.tmpl: no such file or directory
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
