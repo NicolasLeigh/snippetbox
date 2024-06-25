@@ -9,9 +9,9 @@ import (
 
 // Change the signature of the home handler so it is defined as a method against *application.
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	// Check if the current request URL path exactly matches "/". If it doesn't, use     
+	// Check if the current request URL path exactly matches "/". If it doesn't, use
 	// the http.NotFound() function to send a 404 response to the client.
-  // Importantly, we then return from the handler. If we don't return the handler     
+	// Importantly, we then return from the handler. If we don't return the handler
 	// would keep executing and also write the "Hello from SnippetBox" message.
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
@@ -37,8 +37,8 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// paths as a variadic parameter
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		// Because the home handler function is now a method against application         
-		// it can access its fields, including the error logger. We'll write the log         
+		// Because the home handler function is now a method against application
+		// it can access its fields, including the error logger. We'll write the log
 		// message to this instead of the standard logger.
 		app.errLog.Print(err.Error())
 		http.Error(w, "Internal Server Error", 500)
@@ -63,24 +63,24 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello from Snippetbox"))
 }
 
-// Change the signature of the snippetView handler so it is defined as a method 
+// Change the signature of the snippetView handler so it is defined as a method
 // against *application
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
-	// Extract the value of the id parameter from the query string and try to     
-	// convert it to an integer using the strconv.Atoi() function. If it can't     
-	// be converted to an integer, or the value is less than 1, we return a 404 page     
+	// Extract the value of the id parameter from the query string and try to
+	// convert it to an integer using the strconv.Atoi() function. If it can't
+	// be converted to an integer, or the value is less than 1, we return a 404 page
 	// not found response.
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
 		http.NotFound(w, r)
 		return
 	}
-	// Use the fmt.Fprintf() function to interpolate the id value with our response     
+	// Use the fmt.Fprintf() function to interpolate the id value with our response
 	// and write it to the http.ResponseWriter.
 	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
 }
 
-// Change the signature of the snippetCreate handler so it is defined as a method 
+// Change the signature of the snippetCreate handler so it is defined as a method
 // against *application.
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
