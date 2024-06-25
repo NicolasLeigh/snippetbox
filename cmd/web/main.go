@@ -7,6 +7,14 @@ import (
 	"os"
 )
 
+// Define an application struct to hold the application-wide dependencies for the 
+// web application. For now we'll only include fields for the two custom loggers, but 
+// we'll add more to it as the build progresses.
+type application struct {
+	infoLog *log.Logger
+	errLog *log.Logger
+}
+
 func main() {
 	// Define a new command-line flag with the name 'addr', a default value of ":4000"     
 	// and some short help text explaining what the flag controls. The value of the     
@@ -32,6 +40,13 @@ func main() {
 	// file name and line number.
 	errLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	// Initialize a new instance of our application struct, containing the     
+	// dependencies.
+	app := &application{
+		infoLog: infoLog,
+		errLog: errLog,
+	}
+
 	// Use the http.NewServeMux() function to initialize a new servemux, then     
 	// register the home function as the handler for the "/" URL pattern.
 	mux := http.NewServeMux()
@@ -41,9 +56,9 @@ func main() {
 	// directory root.
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 	mux.Handle("/static/",http.StripPrefix("/static/",fileServer))
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet/view", snippetView)
-	mux.HandleFunc("/snippet/create", snippetCreate)
+	mux.HandleFunc("/", app.home)
+	mux.HandleFunc("/snippet/view", app.snippetView)
+	mux.HandleFunc("/snippet/create", app.snippetCreate)
 
 	// Use the http.ListenAndServe() function to start a new web server. We pass in     
 	// two parameters: the TCP network address to listen on (in this case ":4000")     

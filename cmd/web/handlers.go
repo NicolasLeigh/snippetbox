@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
+// Change the signature of the home handler so it is defined as a method against *application.
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// Check if the current request URL path exactly matches "/". If it doesn't, use     
 	// the http.NotFound() function to send a 404 response to the client.
   // Importantly, we then return from the handler. If we don't return the handler     
@@ -37,7 +37,10 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// paths as a variadic parameter
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		log.Print(err.Error())
+		// Because the home handler function is now a method against application         
+		// it can access its fields, including the error logger. We'll write the log         
+		// message to this instead of the standard logger.
+		app.errLog.Print(err.Error())
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
@@ -52,14 +55,17 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// template as the response body.
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		log.Print(err.Error())
+		// Also update the code here to use the error logger from the application struct.
+		app.errLog.Print(err.Error())
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 	w.Write([]byte("Hello from Snippetbox"))
 }
 
-func snippetView(w http.ResponseWriter, r *http.Request) {
+// Change the signature of the snippetView handler so it is defined as a method 
+// against *application
+func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	// Extract the value of the id parameter from the query string and try to     
 	// convert it to an integer using the strconv.Atoi() function. If it can't     
 	// be converted to an integer, or the value is less than 1, we return a 404 page     
@@ -74,7 +80,9 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
 }
 
-func snippetCreate(w http.ResponseWriter, r *http.Request) {
+// Change the signature of the snippetCreate handler so it is defined as a method 
+// against *application.
+func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost)
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
