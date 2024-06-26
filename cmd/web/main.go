@@ -8,14 +8,19 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	"snippetbox.linze.me/internal/models"
 )
 
 // Define an application struct to hold the application-wide dependencies for the
 // web application. For now we'll only include fields for the two custom loggers, but
 // we'll add more to it as the build progresses.
+
+	// Add a snippets field to the application struct. This will allow us to 
+	// make the SnippetModel object available to our handlers.
 type application struct {
 	infoLog *log.Logger
 	errLog  *log.Logger
+	snippets *models.SnippetModel
 }
 
 func main() {
@@ -60,9 +65,12 @@ func main() {
 
 	// Initialize a new instance of our application struct, containing the
 	// dependencies.
+
+	// Initialize a models.SnippetModel instance and add it to the application dependencies.
 	app := &application{
 		infoLog: infoLog,
 		errLog:  errLog,
+		snippets: &models.SnippetModel{DB: db},
 	}
 
 	// Use the http.NewServeMux() function to initialize a new servemux, then
