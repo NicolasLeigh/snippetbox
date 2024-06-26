@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
+	// "html/template"
 	"net/http"
 	"strconv"
 
@@ -21,6 +21,18 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w) // Use the notFound() helper
 		return
 	}
+
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w,err)
+		return
+	}
+
+	for _, snippet := range snippets {
+		fmt.Fprintf(w, "%+v\n", snippet)
+	}
+
+	/*
 
 	// Initialize a slice containing the paths to the two files. It's important
 	// to note that the file containing our base template must be the *first*
@@ -67,6 +79,8 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write([]byte("Hello from Snippetbox"))
+
+	*/
 }
 
 // Change the signature of the snippetView handler so it is defined as a method
