@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
+
+	"snippetbox.linze.me/internal/models"
 )
 
 // Change the signature of the home handler so it is defined as a method against *application.
@@ -79,9 +82,25 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w) // Use the notFound() helper
 		return
 	}
+
+	// Use the SnippetModel object's Get method to retrieve the data for a     
+	// specific record based on its ID. If no matching record is found, return a 404 Not Found response.
+	snippet, err := app.snippets.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord){
+			app.notFound(w)
+		} else {
+			app.serverError(w,err)
+		}
+		return
+	}
 	// Use the fmt.Fprintf() function to interpolate the id value with our response
 	// and write it to the http.ResponseWriter.
-	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+	// fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+
+	// Write the snippet data as a plain-text HTTP response body.
+	// The plus flag (%+v) adds field names
+	fmt.Fprintf(w, "%+v", snippet)
 }
 
 // Change the signature of the snippetCreate handler so it is defined as a method
@@ -94,16 +113,16 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	title := "O snail"     
-	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"     
+	title := "O snail"
+	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
 	expires := 7
 
-	id, err := app.snippets.Insert(title,content,expires)
+	id, err := app.snippets.Insert(title, content, expires)
 	if err != nil {
-		app.serverError(w,err)
+		app.serverError(w, err)
 		return
 	}
 
-	http.Redirect(w,r,fmt.Sprintf("/snippet/view?id=%d", id),http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view?id=%d", id), http.StatusSeeOther)
 
 }

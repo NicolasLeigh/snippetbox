@@ -15,11 +15,11 @@ import (
 // web application. For now we'll only include fields for the two custom loggers, but
 // we'll add more to it as the build progresses.
 
-	// Add a snippets field to the application struct. This will allow us to 
-	// make the SnippetModel object available to our handlers.
+// Add a snippets field to the application struct. This will allow us to
+// make the SnippetModel object available to our handlers.
 type application struct {
-	infoLog *log.Logger
-	errLog  *log.Logger
+	infoLog  *log.Logger
+	errLog   *log.Logger
 	snippets *models.SnippetModel
 }
 
@@ -68,8 +68,8 @@ func main() {
 
 	// Initialize a models.SnippetModel instance and add it to the application dependencies.
 	app := &application{
-		infoLog: infoLog,
-		errLog:  errLog,
+		infoLog:  infoLog,
+		errLog:   errLog,
 		snippets: &models.SnippetModel{DB: db},
 	}
 
