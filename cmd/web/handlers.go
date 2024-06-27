@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	// "html/template"
+	"html/template"
 	"net/http"
 	"strconv"
 
@@ -107,6 +107,24 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 			app.serverError(w,err)
 		}
 		return
+	}
+
+	files := []string{
+		"./ui/html/base.tmpl",
+		"./ui/html/pages/view.tmpl",
+		"./ui/html/partials/nav.tmpl",
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w,err)
+		return
+	}
+
+	// Notice how we are passing in the snippet data (a models.Snippet struct) as the final parameter
+	err = ts.ExecuteTemplate(w, "base", snippet)
+	if err != nil {
+		app.serverError(w,err)
 	}
 	// Use the fmt.Fprintf() function to interpolate the id value with our response
 	// and write it to the http.ResponseWriter.
