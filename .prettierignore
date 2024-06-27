@@ -1,0 +1,2 @@
+# Ignore all go template files:
+*.tmpl

@@ -28,19 +28,13 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, snippet := range snippets {
-		fmt.Fprintf(w, "%+v\n", snippet)
-	}
-
-	/*
-
 	// Initialize a slice containing the paths to the two files. It's important
 	// to note that the file containing our base template must be the *first*
 	// file in the slice.
 	files := []string{
 		"./ui/html/base.tmpl",
-		"./ui/html/pages/home.tmpl",
 		"./ui/html/partials/nav.tmpl",
+		"./ui/html/pages/home.tmpl",
 	}
 
 	// Use the template.ParseFiles() function to read the template file into a
@@ -62,6 +56,11 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create an instance of a templateData struct holding the slice of snippets.
+	data := &templateData{
+		Snippets: snippets,
+	}
+
 	// We then use the Execute() method on the template set to write the
 	// template content as the response body. The last parameter to Execute()
 	// represents any dynamic data that we want to pass in, which for now we'll
@@ -70,17 +69,13 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 	// Use the ExecuteTemplate() method to write the content of the "base"
 	// template as the response body.
-	err = ts.ExecuteTemplate(w, "base", nil)
+	err = ts.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		// Also update the code here to use the error logger from the application struct.
 		// app.errLog.Print(err.Error())
 		// http.Error(w, "Internal Server Error", 500)
 		app.serverError(w, err) // Use the serverError() helper
-		return
 	}
-	w.Write([]byte("Hello from Snippetbox"))
-
-	*/
 }
 
 // Change the signature of the snippetView handler so it is defined as a method
