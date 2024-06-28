@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -28,6 +27,10 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Use the new render helper
+	app.render(w, http.StatusOK, "home.tmpl", &templateData{Snippets: snippets})
+
+	/*
 	// Initialize a slice containing the paths to the two files. It's important
 	// to note that the file containing our base template must be the *first*
 	// file in the slice.
@@ -76,6 +79,8 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		// http.Error(w, "Internal Server Error", 500)
 		app.serverError(w, err) // Use the serverError() helper
 	}
+
+	*/
 }
 
 // Change the signature of the snippetView handler so it is defined as a method
@@ -104,6 +109,10 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Use the new render helper
+	app.render(w, http.StatusOK, "view.tmpl", &templateData{Snippet:snippet})
+
+	/*
 	files := []string{
 		"./ui/html/base.tmpl",
 		"./ui/html/pages/view.tmpl",
@@ -135,6 +144,8 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	// Write the snippet data as a plain-text HTTP response body.
 	// The plus flag (%+v) adds field names
 	fmt.Fprintf(w, "%+v", snippet)
+
+	*/
 }
 
 // Change the signature of the snippetCreate handler so it is defined as a method
@@ -159,4 +170,22 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view?id=%d", id), http.StatusSeeOther)
 
+}
+
+func (app *application) render (w http.ResponseWriter, status int, page string, data *templateData) {
+	// Retrieve the appropriate template set from the cache based on the page name (like 'home.tmpl'). 
+	// If no entry exists in the cache with the provided name, then create a new error and call the serverError() helper method that we made earlier and return.
+	ts, ok := app.templateCache[page]
+	if !ok {
+		err := fmt.Errorf("the template %s does not exist", page)
+		app.serverError(w, err)
+		return
+	}
+
+	w.WriteHeader(status)
+
+	err := ts.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		app.serverError(w, err)
+	}
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -21,6 +22,7 @@ type application struct {
 	infoLog  *log.Logger
 	errLog   *log.Logger
 	snippets *models.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -63,6 +65,12 @@ func main() {
 	// before the main() function exits.
 	defer db.Close()
 
+	// Initialize a new template cache...
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		errLog.Fatal(err)
+	}
+
 	// Initialize a new instance of our application struct, containing the
 	// dependencies.
 
@@ -71,6 +79,7 @@ func main() {
 		infoLog:  infoLog,
 		errLog:   errLog,
 		snippets: &models.SnippetModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	// Use the http.NewServeMux() function to initialize a new servemux, then
