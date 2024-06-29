@@ -7,11 +7,14 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/julienschmidt/httprouter"
 	"snippetbox.linze.me/internal/models"
 )
 
 // Change the signature of the home handler so it is defined as a method against *application.
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
+	// Because httprouter matches the "/" path exactly, we can now remove the manual check of r.URL.Path != "/" from this handler.
+	/*  
 	// Check if the current request URL path exactly matches "/". If it doesn't, use
 	// the http.NotFound() function to send a 404 response to the client.
 	// Importantly, we then return from the handler. If we don't return the handler
@@ -21,6 +24,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w) // Use the notFound() helper
 		return
 	}
+	*/
 
 	// panic("something went wrong!")
 
@@ -95,11 +99,19 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 // Change the signature of the snippetView handler so it is defined as a method
 // against *application
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
+	// When httprouter is parsing a request, the values of any named parameters will be stored in the request context. 
+	// We'll talk about request context in detail later in the book, but for now it's enough to know that 
+	// you can use the ParamsFromContext() function to retrieve a slice containing these parameter names and values like so:
+	params := httprouter.ParamsFromContext(r.Context())
+
 	// Extract the value of the id parameter from the query string and try to
 	// convert it to an integer using the strconv.Atoi() function. If it can't
 	// be converted to an integer, or the value is less than 1, we return a 404 page
 	// not found response.
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+
+	// We can then use the ByName() method to get the value of the "id" named parameter from the slice and validate it as normal.
+	// id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(params.ByName("id"))
 	if err != nil || id < 1 {
 		// http.NotFound(w, r)
 		app.notFound(w) // Use the notFound() helper
@@ -160,15 +172,24 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	*/
 }
 
+func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Display form"))
+}
+
 // Change the signature of the snippetCreate handler so it is defined as a method
 // against *application.
-func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
+
+// Rename this handler to snippetCreatePost.
+func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
+	// Checking if the request method is a POST is now superfluous and can be removed, because this is done automatically by httprouter.
+	/* 
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost)
 		// http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		app.clientError(w, http.StatusMethodNotAllowed) // Use the clientError() helper
 		return
 	}
+	*/
 
 	title := "O snail"
 	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
@@ -180,7 +201,9 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/snippet/view?id=%d", id), http.StatusSeeOther)
+	// http.Redirect(w, r, fmt.Sprintf("/snippet/view?id=%d", id), http.StatusSeeOther)
+	// Update the redirect path to use the new clean URL format.
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 
 }
 
