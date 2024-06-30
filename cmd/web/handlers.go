@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/julienschmidt/httprouter"
 	"snippetbox.linze.me/internal/models"
@@ -213,11 +215,32 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return 
 	}
 
-	/* 
-	title := "O snail"
-	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
-	expires := 7
-	*/
+	// Initialize a map to hold any validation errors for the form fields.
+	fieldErrors := make(map[string]string)
+
+	// Check that the title value is not blank and is not more than 100 characters long. 
+	// If it fails either of those checks, add a message to the errors map using the field name as the key.
+	if strings.TrimSpace(title) == "" {
+		fieldErrors["title"] = "This field cannot be blank"
+	} else if utf8.RuneCountInString(title) > 100 {
+		fieldErrors["title"] = "This field cannot be more than 100 characters long"
+	}
+
+	// Check that the content value isn't blank.
+	if strings.TrimSpace(content) == "" {
+		fieldErrors["content"] = "This field cannot be blank"
+	}
+
+	// Check the expires value matches one of the permitted values (1, 7 or 365)
+	if expires != 1 && expires != 7 && expires != 365 {
+		fieldErrors["expires"] = "This field must equal 1, 7 or 365"
+	}
+
+	// If there are any errors, dump them in a plain text HTTP response and return from the handler.
+	if len(fieldErrors) > 0 {
+		fmt.Fprint(w, fieldErrors)
+		return
+	}
 
 	id, err := app.snippets.Insert(title, content, expires)
 	if err != nil {
