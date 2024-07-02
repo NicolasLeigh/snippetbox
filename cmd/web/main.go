@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"flag"
 	"html/template"
@@ -81,6 +82,9 @@ func main() {
 	sessionManager := scs.New()
 	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Lifetime = 12 * time.Hour
+	// Make sure that the Secure attribute is set on our session cookies.
+  // Setting this means that the cookie will only be sent by a user's web browser when a HTTPS connection is being used (and won't be sent over an unsecure HTTP connection).
+	sessionManager.Cookie.Secure = true
 
 	// Initialize a new instance of our application struct, containing the
 	// dependencies.
@@ -92,6 +96,14 @@ func main() {
 		snippets: &models.SnippetModel{DB: db},
 		templateCache: templateCache,
 		sessionManager: sessionManager,
+	}
+
+	// Initialize a tls.Config struct to hold the non-default TLS settings we want the server to use. 
+	// In this case the only thing that we're changing is the curve preferences value, so that only elliptic curves with assembly implementations are used.
+	tlsConfig := &tls.Config{
+		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+		// MinVersion: tls.VersionTLS12,
+		// MaxVersion: tls.VersionTLS12,
 	}
 
 	// Use the http.NewServeMux() function to initialize a new servemux, then
@@ -129,12 +141,21 @@ func main() {
 		Addr:     *addr,
 		ErrorLog: errLog,
 		Handler:  app.routes(), // Call the new app.routes() method to get the servemux containing our routes.
+		TLSConfig: tlsConfig,
+		// Add Idle, Read and Write timeouts to the server.
+		IdleTimeout: time.Minute,
+		ReadTimeout: 5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 	// err := http.ListenAndServe(*addr, mux)
 
 	// Because the err variable is now already declared in the code above, we need
 	// to use the assignment operator = here, instead of the := 'declare and assign' operator
-	err = srv.ListenAndServe()
+	// err = srv.ListenAndServe()
+
+	// Use the ListenAndServeTLS() method to start the HTTPS server. 
+	// We pass in the paths to the TLS certificate and corresponding private key as the two parameters.
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errLog.Fatal(err)
 }
 
