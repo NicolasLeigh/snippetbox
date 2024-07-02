@@ -7,7 +7,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/v2"
 	_ "github.com/go-sql-driver/mysql"
 	"snippetbox.linze.me/internal/models"
 )
@@ -23,7 +26,9 @@ type application struct {
 	errLog   *log.Logger
 	snippets *models.SnippetModel
 	templateCache map[string]*template.Template
+	sessionManager *scs.SessionManager
 }
+
 
 func main() {
 	// Define a new command-line flag with the name 'addr', a default value of ":4000"
@@ -71,6 +76,12 @@ func main() {
 		errLog.Fatal(err)
 	}
 
+	// Use the scs.New() function to initialize a new session manager. 
+	// Then we configure it to use our MySQL database as the session store, and set a lifetime of 12 hours (so that sessions automatically expire 12 hours after first being created).
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
+
 	// Initialize a new instance of our application struct, containing the
 	// dependencies.
 
@@ -80,6 +91,7 @@ func main() {
 		errLog:   errLog,
 		snippets: &models.SnippetModel{DB: db},
 		templateCache: templateCache,
+		sessionManager: sessionManager,
 	}
 
 	// Use the http.NewServeMux() function to initialize a new servemux, then
