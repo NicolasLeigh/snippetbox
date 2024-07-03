@@ -12,6 +12,7 @@ import (
 
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
+	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
 	"snippetbox.linze.me/internal/models"
 )
@@ -28,6 +29,7 @@ type application struct {
 	snippets *models.SnippetModel
 	users *models.UserModel
 	templateCache map[string]*template.Template
+	formDecoder *form.Decoder
 	sessionManager *scs.SessionManager
 }
 
@@ -78,6 +80,9 @@ func main() {
 		errLog.Fatal(err)
 	}
 
+	// Initialize a decoder instance...
+	formDecoder := form.NewDecoder()
+
 	// Use the scs.New() function to initialize a new session manager. 
 	// Then we configure it to use our MySQL database as the session store, and set a lifetime of 12 hours (so that sessions automatically expire 12 hours after first being created).
 	sessionManager := scs.New()
@@ -97,6 +102,7 @@ func main() {
 		snippets: &models.SnippetModel{DB: db},
 		users: &models.UserModel{DB: db},
 		templateCache: templateCache,
+		formDecoder: formDecoder,
 		sessionManager: sessionManager,
 	}
 

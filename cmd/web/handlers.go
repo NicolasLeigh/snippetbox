@@ -27,6 +27,13 @@ type snippetCreateForm struct {
 	validator.Validator
 }
 
+type userSignupForm struct {
+	Name string `form:"name"`
+	Email string `form:"email"`
+	Password string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
 // Change the signature of the home handler so it is defined as a method against *application.
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// Because httprouter matches the "/" path exactly, we can now remove the manual check of r.URL.Path != "/" from this handler.
@@ -352,11 +359,45 @@ func (app *application) render (w http.ResponseWriter, status int, page string, 
 }
 
 func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Display a HTML form for signing up a new user...")
+	data := app.newTemplateData(r)
+	data.Form = userSignupForm{}
+	app.render(w, http.StatusOK, "signup.tmpl", data)
 }
 
 func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Create a new user...")
+	// err := r.ParseForm()
+	// if err != nil {
+	// 	app.clientError(w, http.StatusBadRequest)
+	// 	return
+	// }
+	//  form := userSignupForm{
+	// 	Name: r.PostForm.Get("name"),
+	// 	Email: r.PostForm.Get("email"),
+	// 	Password: r.PostForm.Get("password"),
+	//  }
+
+	// Using third-party package
+	var form userSignupForm
+	err := app.decodePostForm(r, &form)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+	 
+	 form.CheckField(validator.NotBlank(form.Name), "name", "This field cannot be blank")
+	 form.CheckField(validator.NotBlank(form.Email), "email", "This field cannot be blank")
+	 form.CheckField(validator.Matches(form.Email, validator.EmailRX), "email", "This field must be a valid email address")
+	 form.CheckField(validator.NotBlank(form.Password), "password", "This filed cannot be blank")
+	 form.CheckField(validator.MinChars(form.Password, 6), "password", "This filed must be at least 6 characters long")
+
+	 if !form.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, http.StatusUnprocessableEntity, "signup.tmpl", data)
+		return
+	 }
+
+	 fmt.Fprintln(w, "Create a new user...")
 }
 
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
