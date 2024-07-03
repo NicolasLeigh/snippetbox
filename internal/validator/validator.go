@@ -6,10 +6,10 @@ import (
 	"unicode/utf8"
 )
 
-// Use the regexp.MustCompile() function to parse a regular expression pattern for sanity checking the format of an email address. 
-// This returns a pointer to a 'compiled' regexp.Regexp type, or panics in the event of an error. 
+// Use the regexp.MustCompile() function to parse a regular expression pattern for sanity checking the format of an email address.
+// This returns a pointer to a 'compiled' regexp.Regexp type, or panics in the event of an error.
 // Parsing this pattern once at startup and storing the compiled *regexp.Regexp in a variable is more performant than re-parsing the pattern each time we need it.
-var EmailRX = regexp.MustCompile("^[a-zA-Z0-9. _%+-]+@[a-zA-Z0-9. -]+\\. [a-zA-Z]{2,}$")
+var EmailRX = regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
 
 // Define a new Validator type which contains a map of validation errors for our form fields.
 type Validator struct {
