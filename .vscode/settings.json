@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["calldepth", "httprouter", "mysqlstore", "servemux", "Snippetbox", "tmpl"],
+  "cSpell.words": ["calldepth", "httprouter", "mysqlstore", "nosurf", "servemux", "Snippetbox", "tmpl"],
   "files.associations": {
     "*.tmpl": "html"
   }
