@@ -16,6 +16,7 @@ type templateData struct {
 	Snippets []*models.Snippet
 	Form any
 	Flash string
+	IsAuthenticated bool
 }
 
 // Create a humanDate function which returns a nicely formatted string representation of a time.Time object.
