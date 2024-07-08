@@ -1,11 +1,11 @@
 package main
 
 import (
-	"bytes"
-	"io"
-	"log"
+	// "bytes"
+	// "io"
+	// "log"
 	"net/http"
-	"net/http/httptest"
+	// "net/http/httptest"
 	"testing"
 
 	"snippetbox.linze.me/internal/assert"
