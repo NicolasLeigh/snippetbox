@@ -10,13 +10,13 @@ import (
 )
 
 func secureHeaders(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Any code here will execute on the way down the chain.
-		w.Header().Set("Content-Security-Policy","default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com")
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com")
 		w.Header().Set("Referrer-Policy", "origin-when-cross-origin")
-		w.Header().Set("X-Content-Type-Options","nosniff")
-		w.Header().Set("X-Frame-Options","deny")
-		w.Header().Set("X-XSS-Protection","0")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "deny")
+		w.Header().Set("X-XSS-Protection", "0")
 
 		next.ServeHTTP(w, r)
 		// Any code here will execute on the way back up the chain.
@@ -31,13 +31,13 @@ func (app *application) logRequest(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) recoverPanic(next http.Handler) http.Handler{
+func (app *application) recoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Create a deferred function (which will always be run in the event of a panic as Go unwinds the stack).
 		defer func() {
 			// Use the builtin recover function to check if there has been a panic or not. If there has...
 			if err := recover(); err != nil {
-				w.Header().Set("Connection","close")
+				w.Header().Set("Connection", "close")
 				app.serverError(w, fmt.Errorf("%s", err))
 			}
 		}()
@@ -67,15 +67,15 @@ func noSurf(next http.Handler) http.Handler {
 	csrfHandler := nosurf.New(next)
 	csrfHandler.SetBaseCookie(http.Cookie{
 		HttpOnly: true,
-		Path: "/",
-		Secure: true,
+		Path:     "/",
+		Secure:   true,
 	})
 	return csrfHandler
 }
 
 func (app *application) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Retrieve the authenticatedUserID value from the session using the GetInt() method. 
+		// Retrieve the authenticatedUserID value from the session using the GetInt() method.
 		// This will return the zero value for an int (0) if no "authenticatedUserID" value is in the session -- in which case we call the next handler in the chain as normal and return.
 		id := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
 		log.Println(id)
@@ -91,7 +91,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		// If a matching user is found, we know that the request is coming from an authenticated user who exists in our database. 
+		// If a matching user is found, we know that the request is coming from an authenticated user who exists in our database.
 		// We create a new copy of the request (with an isAuthenticatedContextKey value of true in the request context) and assign it to r.
 		if exists {
 			ctx := context.WithValue(r.Context(), isAuthenticatedContextKey, true)

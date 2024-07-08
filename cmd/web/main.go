@@ -24,15 +24,16 @@ import (
 // Add a snippets field to the application struct. This will allow us to
 // make the SnippetModel object available to our handlers.
 type application struct {
-	infoLog  *log.Logger
-	errLog   *log.Logger
-	snippets *models.SnippetModel
-	users *models.UserModel
-	templateCache map[string]*template.Template
-	formDecoder *form.Decoder
+	infoLog *log.Logger
+	errLog  *log.Logger
+	// snippets *models.SnippetModel
+	// users *models.UserModel
+	snippets       models.SnippetModelInterface
+	users          models.UserModelInterface
+	templateCache  map[string]*template.Template
+	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
 }
-
 
 func main() {
 	// Define a new command-line flag with the name 'addr', a default value of ":4000"
@@ -83,13 +84,13 @@ func main() {
 	// Initialize a decoder instance...
 	formDecoder := form.NewDecoder()
 
-	// Use the scs.New() function to initialize a new session manager. 
+	// Use the scs.New() function to initialize a new session manager.
 	// Then we configure it to use our MySQL database as the session store, and set a lifetime of 12 hours (so that sessions automatically expire 12 hours after first being created).
 	sessionManager := scs.New()
 	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Lifetime = 12 * time.Hour
 	// Make sure that the Secure attribute is set on our session cookies.
-  // Setting this means that the cookie will only be sent by a user's web browser when a HTTPS connection is being used (and won't be sent over an unsecure HTTP connection).
+	// Setting this means that the cookie will only be sent by a user's web browser when a HTTPS connection is being used (and won't be sent over an unsecure HTTP connection).
 	sessionManager.Cookie.Secure = true
 
 	// Initialize a new instance of our application struct, containing the
@@ -97,16 +98,16 @@ func main() {
 
 	// Initialize a models.SnippetModel instance and add it to the application dependencies.
 	app := &application{
-		infoLog:  infoLog,
-		errLog:   errLog,
-		snippets: &models.SnippetModel{DB: db},
-		users: &models.UserModel{DB: db},
-		templateCache: templateCache,
-		formDecoder: formDecoder,
+		infoLog:        infoLog,
+		errLog:         errLog,
+		snippets:       &models.SnippetModel{DB: db},
+		users:          &models.UserModel{DB: db},
+		templateCache:  templateCache,
+		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
 	}
 
-	// Initialize a tls.Config struct to hold the non-default TLS settings we want the server to use. 
+	// Initialize a tls.Config struct to hold the non-default TLS settings we want the server to use.
 	// In this case the only thing that we're changing is the curve preferences value, so that only elliptic curves with assembly implementations are used.
 	tlsConfig := &tls.Config{
 		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
@@ -146,13 +147,13 @@ func main() {
 	// the ErrorLog field so that the server now uses the custom errorLog logger in
 	// the event of any problems.
 	srv := &http.Server{
-		Addr:     *addr,
-		ErrorLog: errLog,
-		Handler:  app.routes(), // Call the new app.routes() method to get the servemux containing our routes.
+		Addr:      *addr,
+		ErrorLog:  errLog,
+		Handler:   app.routes(), // Call the new app.routes() method to get the servemux containing our routes.
 		TLSConfig: tlsConfig,
 		// Add Idle, Read and Write timeouts to the server.
-		IdleTimeout: time.Minute,
-		ReadTimeout: 5 * time.Second,
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 	// err := http.ListenAndServe(*addr, mux)
@@ -161,7 +162,7 @@ func main() {
 	// to use the assignment operator = here, instead of the := 'declare and assign' operator
 	// err = srv.ListenAndServe()
 
-	// Use the ListenAndServeTLS() method to start the HTTPS server. 
+	// Use the ListenAndServeTLS() method to start the HTTPS server.
 	// We pass in the paths to the TLS certificate and corresponding private key as the two parameters.
 	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errLog.Fatal(err)

@@ -24,8 +24,8 @@ func TestSecureHeaders(t *testing.T) {
 		w.Write([]byte("OK"))
 	})
 
-	// Pass the mock HTTP handler to our secureHeaders middleware. 
-	// Because secureHeaders *returns* a http.Handler we can call its ServeHTTP() method, 
+	// Pass the mock HTTP handler to our secureHeaders middleware.
+	// Because secureHeaders *returns* a http.Handler we can call its ServeHTTP() method,
 	// passing in the http.ResponseRecorder and dummy http.Request to execute it.
 	secureHeaders(next).ServeHTTP(rr, r)
 
@@ -45,21 +45,21 @@ func TestSecureHeaders(t *testing.T) {
 	assert.Equal(t, rs.Header.Get("X-Content-Type-Options"), expectedValue)
 
 	// Check that the middleware has correctly set the X-Frame-Options header on the response.
-	expectedValue = "deny"     
+	expectedValue = "deny"
 	assert.Equal(t, rs.Header.Get("X-Frame-Options"), expectedValue)
 
-	// Check that the middleware has correctly set the X-XSS-Protection header on the response    
-	 expectedValue = "0"     
-	 assert.Equal(t, rs.Header.Get("X-XSS-Protection"), expectedValue)
+	// Check that the middleware has correctly set the X-XSS-Protection header on the response
+	expectedValue = "0"
+	assert.Equal(t, rs.Header.Get("X-XSS-Protection"), expectedValue)
 
-	 // Check that the middleware has correctly called the next handler in line and the response status code and body are as expected.
-	 assert.Equal(t, rs.StatusCode, http.StatusOK)
+	// Check that the middleware has correctly called the next handler in line and the response status code and body are as expected.
+	assert.Equal(t, rs.StatusCode, http.StatusOK)
 
-	 defer rs.Body.Close()
-	 body, err := io.ReadAll(rs.Body)
-	 if err != nil {
+	defer rs.Body.Close()
+	body, err := io.ReadAll(rs.Body)
+	if err != nil {
 		t.Fatal(err)
-	 }
-	 bytes.TrimSpace(body)
-	 assert.Equal(t, string(body), "OK")
+	}
+	bytes.TrimSpace(body)
+	assert.Equal(t, string(body), "OK")
 }

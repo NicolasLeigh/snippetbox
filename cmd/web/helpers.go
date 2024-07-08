@@ -33,15 +33,15 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
-// Create an newTemplateData() helper, which returns a pointer to a templateData struct initialized with the current year. 
-//Note that we're not using the *http.Request parameter here at the moment, but we will do later in the book.
+// Create an newTemplateData() helper, which returns a pointer to a templateData struct initialized with the current year.
+// Note that we're not using the *http.Request parameter here at the moment, but we will do later in the book.
 func (app *application) newTemplateData(r *http.Request) *templateData {
 	return &templateData{
 		CurrentYear: time.Now().Year(),
 		// Add the flash message to the template data, if one exists.
-		Flash: app.sessionManager.PopString(r.Context(), "flash"),
+		Flash:           app.sessionManager.PopString(r.Context(), "flash"),
 		IsAuthenticated: app.isAuthenticated(r),
-		CSRFToken: nosurf.Token(r),
+		CSRFToken:       nosurf.Token(r),
 	}
 }
 
@@ -60,7 +60,7 @@ func (app *application) decodePostForm(r *http.Request, dst any) error {
 		// We use errors.As() to check for this and raise a panic rather than returning the error.
 		var invalidDecoderError *form.InvalidDecoderError
 
-		if errors.As(err, &invalidDecoderError){
+		if errors.As(err, &invalidDecoderError) {
 			panic(err)
 		}
 
